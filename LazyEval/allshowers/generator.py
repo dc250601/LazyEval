@@ -1,6 +1,7 @@
 import torch
 import warnings
-from .core.preprocessing import compose
+import allshowers
+from allshowers.preprocessing import compose
 
 class AllShowerGenerator:
     def __init__(self,

@@ -1,5 +1,6 @@
 import torch
-from .core.data_sets import to_label_tensor
+import allshowers
+from allshowers.data_sets import to_label_tensor
 import showerdata
 
 class AllShowerDataset:

@@ -1,9 +1,10 @@
 import showerdata
-from .core import flow_matching as fm
-from .core import transformer
-from .core.data_sets import to_label_tensor
-from .core.preprocessing import compose
-from .core import data_sets
+import allshowers
+from allshowers import flow_matching as fm
+from allshowers import transformer
+from allshowers.data_sets import to_label_tensor
+from allshowers.preprocessing import compose
+from allshowers import data_sets
 
 import yaml
 
