@@ -1,15 +1,12 @@
-## This script is is used to orchestrate the bash jobs.
-## We will use 16 V100 GPUs for Shower generation
-
 #!/bin/bash
 #SBATCH --job-name=ignorance-4-v100
 #SBATCH --partition=maxgpu
-#SBATCH --nodes=4
+#SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --constraint=V100&GPUx4
 #SBATCH --cpus-per-task=72
 #SBATCH --mem=128G
-#SBATCH --time=24:00:00
+#SBATCH --time=4:00:00
 #SBATCH --output=LazyEval-%j.out
 #SBATCH --error=LazyEval-%j.err
 

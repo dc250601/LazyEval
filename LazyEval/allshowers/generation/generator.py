@@ -79,15 +79,16 @@ class AllShowerGenerator:
         layer = layer.to(self.device)
         mask = mask.to(self.device)
 
-        raw_samples = self.flow.sample(
-            shape=(condition.shape[0], max_points, 3),
-            num_timesteps=self.num_timesteps,
-            cond=condition,
-            num_points=num_points_,
-            layer=layer,
-            mask=mask,
-            label=labels_,
-        )        
+        with torch.inference_mode():
+            raw_samples = self.flow.sample(
+                shape=(condition.shape[0], max_points, 3),
+                num_timesteps=self.num_timesteps,
+                cond=condition,
+                num_points=num_points_,
+                layer=layer,
+                mask=mask,
+                label=labels_,
+            )        
 
         samples_ = torch.zeros((condition.shape[0], max_points, 4), device=self.device)
         samples_[:, :, :2] = self.samples_coordinate_trafo.inverse(raw_samples[:, :, :2])
