@@ -21,6 +21,8 @@ import torch.distributed as dist
 import fcntl
 from pathlib import Path
 
+import os
+
 def generate_from_file(
     run_params_file,
     model_state_dict_file,
@@ -59,12 +61,13 @@ def generate_from_file(
                       trafo_path=trafo_state_dict_file)
 
     if rank == 0:
-        if os.path.exists(output_path):
-            os.remove(output_path)
+        if os.path.exists(outfile_path):
+            os.remove(outfile_path)
         WriterObject = Writer(output_file = outfile_path,
                               length = (EndIdx - StartIdx),
                               shower_shape = SHOWER_SHAPE,
-                              conditioning_file = conditioning_data_file
+                              conditioning_file = conditioning_data_file,
+                              GlobalStartIdx = StartIdx
                              )
         dist.barrier()
     else:
@@ -72,7 +75,8 @@ def generate_from_file(
         WriterObject = Writer(output_file = outfile_path,
                               length = None,
                               shower_shape = SHOWER_SHAPE,
-                              conditioning_file = conditioning_data_file
+                              conditioning_file = conditioning_data_file,
+                              GlobalStartIdx = StartIdx
                              )
     
     infer_object = InferObject()
@@ -166,14 +170,14 @@ if __name__ == "__main__":
     
     model = model.to(device)
     ##########################################################################################################
-    NumSamplesPerRank = (args.end_idx - args.start_idx)// world_size
-    WorkerStart = args.start_idx + NumSamplesPerRank * rank 
-    WorkerStop = args.start_idx + NumSamplesPerRank* (rank+1)
+    NumSamplesPerRank = (GlobalStop - GlobalStart)// world_size
+    WorkerStart = GlobalStart + NumSamplesPerRank * rank 
+    WorkerStop = GlobalStart + NumSamplesPerRank* (rank+1)
 
     if rank == world_size - 1:
         WorkerStop = args.end_idx
 
-    BatchIter = read_func(datapath = args.conditioning_data_file,
+    BatchIter = read_func(datapath = args.conditioning_data,
                           start = WorkerStart,
                           end = WorkerStop
                          )
@@ -189,6 +193,7 @@ if __name__ == "__main__":
             
         except StopIteration:
             print(f"[rank {rank}] Completed ", flush=True)
+            break
 
     dist.barrier()
     dist.destroy_process_group()

@@ -22,7 +22,7 @@ class AllShowerDataset:
         self.GetGeant4Showers = True
         self.GetObservables = True
 
-        self.NumBatches = (self.EndIdx - self.StartIdx)//self.BatchSize
+        self.NumBatches = (self.EndIdx - self.StartIdx + self.BatchSize - 1) // self.BatchSize
         
     def get_energies(self,
                      start_idx, 
@@ -101,27 +101,29 @@ class AllShowerDataset:
         return self
 
     def __next__(self):
-        if self.index + self.BatchSize> self.EndIdx:
+        if self.index + self.BatchSize>= self.EndIdx:
             raise StopIteration
 
         batch = {}
+        stop = min(self.index + self.BatchSize, self.EndIdx)
+        
         if self.GetObservables:
             batch["energies"] = self.get_energies(self.index,
-                                                  self.index + self.BatchSize)
+                                                  stop)
             batch["num_points"] = self.get_num_points(self.index,
-                                                      self.index+self.BatchSize)
+                                                      stop)
             batch["angle"] = self.get_angle(self.index,
-                                            self.index+self.BatchSize)
+                                            stop)
             pdg,labels = self.get_pdg(self.index,
-                                      self.index+self.BatchSize)
+                                      stop)
             batch["pdg"] = pdg
             batch["label"] = labels
 
         if self.GetGeant4Showers:
             batch["Geant4Showers"] = self.get_geant4_showers(self.index,
-                                                             self.index+self.BatchSize)
+                                                             stop)
         
-        self.index += self.BatchSize
+        self.index = stop
         return batch
 
     def __len__(self):

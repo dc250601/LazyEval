@@ -3,14 +3,15 @@ import h5py as h5
 import torch
 import showerdata
 import fcntl
-import Path from pathlib
+from pathlib import Path
 
 class Writer:
     def __init__(self,
                  output_file,
                  length,
                  shower_shape,
-                 conditioning_file
+                 conditioning_file,
+                 GlobalStartIdx
                 ):
                     
         self.conditioning_data_file = h5.File(conditioning_file,"r")
@@ -24,8 +25,9 @@ class Writer:
                                         )
 
         path = Path(output_file).resolve()
-        self.LOCK_PATH = path.wih_name(path.name + ".lock")
-
+        self.LOCK_PATH = path.with_name(path.name + ".lock")
+        self.GlobalStartIdx = GlobalStartIdx
+        
     def write_func(self,
                    data,
                    idx):
@@ -42,7 +44,7 @@ class Writer:
             fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
             showerdata.save_batch(showers,
                                   self.output_file,
-                                  start=idx)        
+                                  start=idx-self.GlobalStartIdx)        
 
     def close(self):
         self.conditioning_data_file.close()

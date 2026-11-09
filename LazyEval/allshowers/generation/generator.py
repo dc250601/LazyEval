@@ -58,7 +58,7 @@ class AllShowerGenerator:
         if self.run_params["model"]["dim_inputs"][-1] > 1:
             condition = torch.concatenate([self.cond_trafo(energies_ * self.resize_factor), angle_], dim=-1)
         else:
-            condition = cond_trafo(energies_)
+            condition = self.cond_trafo(energies_)
 
         max_points = self.run_params["data"].get("max_num_points", 6016)
     
@@ -72,7 +72,7 @@ class AllShowerGenerator:
                 if total_points > max_points:
                     warnings.warn(f"num points {total_points} exceeds max points {max_points}, truncating")
                     total_points = max_points
-                    layer_i = layer_i[: self.max_points]
+                    layer_i = layer_i[: max_points]
                 layer[i, :total_points, 0] = layer_i
                 mask[i, :total_points, 0] = True
 
