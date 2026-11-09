@@ -77,7 +77,6 @@ def generate_from_file(
     
     infer_object = InferObject()
     read_object = ReaderObject(BatchSize)
-    ### writer.write_func
 
 
 
