@@ -12,10 +12,11 @@ import yaml
 from .resultwriter import Writer
 from .generator import InferObject, AllShowerGenerator
 from .dataset import ReaderObject
-from ..util import setup_distributed
+from ...util import setup_distributed
 import argparse
 
 import torch
+import torch.distributed as dist
 
 import fcntl
 from pathlib import Path
@@ -58,6 +59,8 @@ def generate_from_file(
                       trafo_path=trafo_state_dict_file)
 
     if rank == 0:
+        if os.path.exists(output_path):
+            os.remove(output_path)
         WriterObject = Writer(output_file = outfile_path,
                               length = (EndIdx - StartIdx),
                               shower_shape = SHOWER_SHAPE,
@@ -147,9 +150,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    rank, local_rank, world_size, device = util.setup_distributed()
+    rank, local_rank, world_size, device = setup_distributed()
 
-    run_utils= generateshower.generate_from_file(run_params_file = args.run_params,
+    run_utils= generate_from_file(run_params_file = args.run_params,
                                                  model_state_dict_file = args.model_weights,
                                                  trafo_state_dict_file = args.trafo_weights,
                                                  conditioning_data_file = args.conditioning_data,
@@ -162,7 +165,7 @@ if __name__ == "__main__":
     read_func,model,infer_func,GlobalStart,GlobalStop,write_obj,shape = run_utils
 
     
-
+    model = model.to(device)
     ##########################################################################################################
     NumSamplesPerRank = (args.end_idx - args.start_idx)// world_size
     WorkerStart = args.start_idx + NumSamplesPerRank * rank 
@@ -177,15 +180,14 @@ if __name__ == "__main__":
                          )
     
     ##########################################################################################################
-    batch_idx = -1
     current_idx = WorkerStart
     while True:
         try:
             batch = next(BatchIter)
-            infer_samples = infer_func(model, data)
-            batch_idx += 1
-            current_idx += len(infer)
+            infer_samples = infer_func(model, batch)
             write_obj.write_func(infer_samples, current_idx)
+            current_idx += len(infer_samples)
+            
         except StopIteration:
             print(f"[rank {rank}] Completed ", flush=True)
 

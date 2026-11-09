@@ -3,6 +3,7 @@ import h5py as h5
 import torch
 import showerdata
 import fcntl
+import Path from pathlib
 
 class Writer:
     def __init__(self,
@@ -22,7 +23,7 @@ class Writer:
                                                 *shower_shape)
                                         )
 
-        path = Path(args.output).resolve()
+        path = Path(output_file).resolve()
         self.LOCK_PATH = path.wih_name(path.name + ".lock")
 
     def write_func(self,
