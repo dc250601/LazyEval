@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=ignorance-4-v100
+#SBATCH --job-name=Generation-4-v100
 #SBATCH --partition=maxgpu
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
