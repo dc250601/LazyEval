@@ -9,12 +9,14 @@ class AllShowerGenerator:
                  device,
                  run_params,
                  num_timesteps=16,
+                 solver = "midpoint",
                  resize_factor=1
                 ):
         self.device = device
         self.resize_factor = resize_factor
         self.num_timesteps = num_timesteps
         self.run_params = run_params
+        self.solver = solver
         self.flow = flow
         self.cond_trafo = compose(run_params["data"].get("cond_trafo"))
         
@@ -36,11 +38,18 @@ class AllShowerGenerator:
         self.samples_coordinate_trafo.load_state_dict(trafo_state["samples_coordinate_trafo"])
         self.cond_trafo.load_state_dict(trafo_state["cond_trafo"])
 
-        model_state = torch.load(weight_path,
-                        map_location="cpu",
+        checkpoint = torch.load(weight_path,
+                        map_location=self.device,
                         weights_only=True)
-        
-        self.flow.load_state_dict(model_state)
+
+        weights = {
+            key.removeprefix("module."): value
+            for key, value in checkpoint["model_state_dict"].items()
+        }
+
+        # weights = checkpoint["model_state_dict"]
+        self.flow.network.load_state_dict(weights, strict = True)
+
         
         
     def to(self,device):
@@ -83,6 +92,7 @@ class AllShowerGenerator:
             raw_samples = self.flow.sample(
                 shape=(condition.shape[0], max_points, 3),
                 num_timesteps=self.num_timesteps,
+                solver = self.solver,
                 cond=condition,
                 num_points=num_points_,
                 layer=layer,

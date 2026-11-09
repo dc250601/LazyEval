@@ -29,6 +29,8 @@ def generate_from_file(
     trafo_state_dict_file,
     conditioning_data_file,
     outfile_path,
+    num_time_steps,
+    solver,
     StartIdx = 0,
     EndIdx = None,
     rank = None,
@@ -55,7 +57,10 @@ def generate_from_file(
 
     model = AllShowerGenerator(flow = flow,
                                device = "cpu",
-                               run_params = run_params,)
+                               run_params = run_params,
+                               num_time_steps = num_time_steps,
+                               solver = solver
+                              )
 
     model.get_weights(weight_path=model_state_dict_file,
                       trafo_path=trafo_state_dict_file)
@@ -123,6 +128,20 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--num-timesteps",
+        type=int,
+        required=True,
+        help="Number of ODE time steps"
+    )
+
+    parser.add_argument(
+        "--solver",
+        type=str,
+        default="midpoint",
+        help="ODE Solver to Use"
+    )
+
+    parser.add_argument(
         "--output",
         type=str,
         default="output.h5",
@@ -156,14 +175,16 @@ if __name__ == "__main__":
     rank, local_rank, world_size, device = setup_distributed()
 
     run_utils= generate_from_file(run_params_file = args.run_params,
-                                                 model_state_dict_file = args.model_weights,
-                                                 trafo_state_dict_file = args.trafo_weights,
-                                                 conditioning_data_file = args.conditioning_data,
-                                                 outfile_path = args.output,
-                                                 StartIdx = args.start_idx,
-                                                 EndIdx = args.end_idx,
-                                                 BatchSize = args.batch_size,
-                                                 rank = rank)
+                                  model_state_dict_file = args.model_weights,
+                                  trafo_state_dict_file = args.trafo_weights,
+                                  conditioning_data_file = args.conditioning_data,
+                                  outfile_path = args.output,
+                                  num_time_steps = args.num_timesteps,
+                                  solver = args.solver,
+                                  StartIdx = args.start_idx,
+                                  EndIdx = args.end_idx,
+                                  BatchSize = args.batch_size,
+                                  rank = rank)
 
     read_func,model,infer_func,GlobalStart,GlobalStop,write_obj,shape = run_utils
 
