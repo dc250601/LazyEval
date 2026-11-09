@@ -13,3 +13,5 @@ Contact:
 """
 
 from LazyEval.core import *
+from . import allshowers
+from . import core

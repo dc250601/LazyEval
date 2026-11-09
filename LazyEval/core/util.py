@@ -61,10 +61,12 @@ def process_single_thread(data,
 
     results = []
     if valid_indices is None:
-        valid_indices = lambda x: x
+        valid_indices = type("Identity", (), {"__getitem__": lambda self, x: x})()
         
     for local_start in range(start_idx,end_idx,batch_size):
         local_end = min(local_start+batch_size,end_idx)
         results.append(func(data[valid_indices[local_start:local_end]]))
 
     return np.concatenate(results,0)
+
+
