@@ -24,7 +24,8 @@ class AllShowerGenerator:
         self.samples_energy_trafo = compose(run_params["data"].get("samples_energy_trafo"))
 
         self.to(device)
-    
+        self.flow.set_solver(solver)
+        
     def get_weights(self,
                     weight_path,
                     trafo_path
@@ -92,7 +93,6 @@ class AllShowerGenerator:
             raw_samples = self.flow.sample(
                 shape=(condition.shape[0], max_points, 3),
                 num_timesteps=self.num_timesteps,
-                solver = self.solver,
                 cond=condition,
                 num_points=num_points_,
                 layer=layer,

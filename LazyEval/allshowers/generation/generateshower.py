@@ -58,7 +58,7 @@ def generate_from_file(
     model = AllShowerGenerator(flow = flow,
                                device = "cpu",
                                run_params = run_params,
-                               num_time_steps = num_time_steps,
+                               num_timesteps=num_time_steps,
                                solver = solver
                               )
 
@@ -196,7 +196,7 @@ if __name__ == "__main__":
     WorkerStop = GlobalStart + NumSamplesPerRank* (rank+1)
 
     if rank == world_size - 1:
-        WorkerStop = args.end_idx
+        WorkerStop = GlobalStop
 
     BatchIter = read_func(datapath = args.conditioning_data,
                           start = WorkerStart,

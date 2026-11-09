@@ -101,7 +101,7 @@ class AllShowerDataset:
         return self
 
     def __next__(self):
-        if self.index + self.BatchSize>= self.EndIdx:
+        if if self.index >= self.EndIdx:
             raise StopIteration
 
         batch = {}
